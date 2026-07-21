@@ -136,15 +136,28 @@ ai-customer-support-assistant/
 
 ---
 
-## Screenshots
+## 📸 Screenshots
 
-Include screenshots of:
+### Workflow
 
-* n8n Workflow
-* Airtable Database
-* Gmail Draft
-* AI Output
-* Final Workflow Execution
+![Workflow](screenshots/workflow.png)
+
+### Airtable CRM
+
+![Airtable](screenshots/airtable.png)
+
+### Customer Email
+
+![Email](screenshots/gmail.png
+
+### AI Draft
+
+![Email](screenshots/draft.png)
+
+### Slack Notification
+
+![Slack](screenshots/slack.png)
+
 
 ---
 
