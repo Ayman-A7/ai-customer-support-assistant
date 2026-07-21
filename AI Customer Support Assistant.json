@@ -1,0 +1,439 @@
+{
+  "name": "AI Customer Support Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        16
+      ],
+      "id": "224e37a6-20b9-4044-8ca4-962420e2f9ee",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ],
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        16
+      ],
+      "id": "2e0aadcd-11e3-4ac8-91ab-99e054a8cd41",
+      "name": "Get many messages",
+      "webhookId": "d8b97cfb-6675-49a4-9cae-c865d3130312",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RTezo73wOPwIFqmL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this customer email.\n\nReturn ONLY valid JSON.\n\n{\n  \"category\":\"\",\n  \"priority\":\"\",\n  \"sentiment\":\"\",\n  \"summary\":\"\",\n  \"reply\":\"\"\n}\n\nEmail:\n\n{{ $json.snippet }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        448,
+        16
+      ],
+      "id": "8c285e34-17dc-4cc2-bfd5-53d4bd207099",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean markdown backticks and whitespace if present\nlet rawText = $json.text || \"\";\nrawText = rawText.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n\n// Parse and return formatted item\nconst parsed = JSON.parse(rawText);\nreturn [{ json: parsed }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        16
+      ],
+      "id": "8cdfad77-5506-49ef-a285-c2df49f00a1c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appa04wT38PJcLwdW",
+          "mode": "list",
+          "cachedResultName": "Custtomer Support",
+          "cachedResultUrl": "https://airtable.com/appa04wT38PJcLwdW"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl7IDefWvd062Naz",
+          "mode": "list",
+          "cachedResultName": "Support Tickets",
+          "cachedResultUrl": "https://airtable.com/appa04wT38PJcLwdW/tbl7IDefWvd062Naz"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer": "={{ $('Get many messages').item.json.From }}",
+            "Email": "={{ $('Get many messages').item.json.From }}",
+            "Category": "={{ $json.category }}",
+            "Priority": "={{ $json.priority }}",
+            "Sentiment": "={{ $json.sentiment }}",
+            "Summary": "={{ $json.summary }}",
+            "Reply": "={{ $json.reply }}",
+            "Status": "Open"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reply",
+              "displayName": "Reply",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Open",
+                  "value": "Open"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created Time",
+              "displayName": "Created Time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "1906c5cd-8c77-4781-a289-f9b2c9d5a134",
+      "name": "Create a record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "HTKgdkMecNpgMRig",
+          "name": "Airtable account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        240
+      ],
+      "id": "e2060ba2-e5ea-48b6-bec4-25b0dbefb916",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WrbY98auAVWVuuZ6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=Re: {{ $('Get many messages').item.json.Subject }} ",
+        "message": "={{ $('Code in JavaScript').item.json.reply }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        16
+      ],
+      "id": "30b28f6a-35e5-46b3-88b0-c3157cc11b39",
+      "name": "Create a draft",
+      "webhookId": "63e7c011-eba6-4db1-b5cc-cc5e4b034a46",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RTezo73wOPwIFqmL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Get many messages').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        16
+      ],
+      "id": "ae8a3d6e-8f3c-4308-85a2-ff723d62a604",
+      "name": "Mark a message as read",
+      "webhookId": "954eac15-b34c-4652-87a2-3343cadb3d50",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RTezo73wOPwIFqmL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BJC2TTW9Y",
+          "mode": "list",
+          "cachedResultName": "all-aymanamjad7"
+        },
+        "text": "=📩 New Support Ticket\n\nCustomer:\n{{ $('Get many messages').item.json.From }}\nCategory:\n{{ $('Code in JavaScript').item.json.category }}\n\nPriority:\n{{ $('Code in JavaScript').item.json.priority }}\n\nSummary:\n{{ $('Code in JavaScript').item.json.summary }}\n\nDraft reply created.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1696,
+        16
+      ],
+      "id": "48759ea5-968a-4ec4-b7e8-22873f092c42",
+      "name": "Send a message",
+      "webhookId": "e3a74926-69a2-4f75-9ccd-ad4e3f0b814e",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "s8CVofIRhaIH2p2D",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft": {
+      "main": [
+        [
+          {
+            "node": "Mark a message as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark a message as read": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "41af8272-236b-4c7f-ba61-f41771f2bc74",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4749ef1dff9dab97533d296fc60571d1f46847c4cabe69d94e1cae900f679a95"
+  },
+  "nodeGroups": [],
+  "id": "3H5KK0kdnWXEQ13p",
+  "tags": []
+}
